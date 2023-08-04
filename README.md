@@ -4,7 +4,7 @@ This uses GPT-4 to migrate my notes from [Obsidian](https://obsidian.md/) markdo
 
 ## Usage
 
-Create a .env file with the contents:
+Create a `.env` file with the contents:
 
 ```
 OPENAI_API_KEY=your secret API key from platform.openai.com
