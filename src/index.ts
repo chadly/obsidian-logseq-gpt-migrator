@@ -37,7 +37,7 @@ The frontmatter of the file should have a plantedAt date field. I'd like you to 
 frontmatter from the file, and reformat the contents by replacing each paragraph with
 an indented bulleted list.
 
-For example, if a file named "Hello World.md" looks like this:
+For example, if a file named "3 Things.md" looks like this:
 
 ---
 tags: [seedling]
@@ -45,31 +45,47 @@ plantedAt: 2023-02-22
 lastTendedAt: 2023-05-31
 ---
 
-There are three key concepts to master when creating an effective YouTube thumbnail.
+There are three things you should know about things.
 
-## Attention
+# Thing 1
 
-Understand *what* will grab your viewers' attention visually.
+This is a thing with other things that have things associated to those things.
 
-## Relevance
+Sometimes, things are cool. Other times, things are not so cool. In fact, things can get hot.
 
-The images should be *relevant* to your viewers' *interests* in relation to your video.
+# Thing 2
 
-## Intrigue
+Here is a list of things:
+- item 1
+- item 2
+- item 3
 
-Create curiosity using your image that makes a viewer want to click to satisfy that curiosity.
+## Thing 2.1
+
+This is another thing about thing 2.
+
+# Thing 3
+
+Thing 3 is also here.
 
 
 The new filename would be 2023-02-22.md with the following contents:
 
-- ## Hello World
-	- There are three key concepts to master when creating an effective YouTube thumbnail.
-	- ### Attention
-		- Understand *what* will grab your viewers' attention visually.
-	- ### Relevance
-		- The images should be *relevant* to your viewers' *interests* in relation to your video.
-	- ### Intrigue
-		- Create curiosity using your image that makes a viewer want to click to satisfy that curiosity.
+- ## 3 Things
+	- There are three things you should know about things.
+	- ### Thing 1
+		- This is a thing with other things that have things associated to those things.
+		- Sometimes, things are cool. Other times, things are not so cool. In fact, things can get hot.
+	- ### Thing 2
+		- Here is a list of things:
+			- item 1
+			- item 2
+			- item 3
+		- #### Thing 2.1
+			- This is another thing about thing 2.
+	- ### Thing 3
+		- Thing 3 is also here.
+
 
 Notice the top level item should always be an h2 with the filename. Each subheading should be
 adjusted to be hierarchal lower than h2 accordingly. Also notice how each subblock is indented
