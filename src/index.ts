@@ -1,24 +1,48 @@
 import "dotenv/config";
 
-import { initializeAgentExecutorWithOptions } from "langchain/agents";
+import path from "path";
+import fs from "fs";
+
+import { z } from "zod";
+
 import { OpenAI } from "langchain/llms/openai";
+import { PromptTemplate } from "langchain/prompts";
+import { LLMChain } from "langchain/chains";
+import {
+	StructuredOutputParser,
+	OutputFixingParser,
+} from "langchain/output_parsers";
 
-import { tools } from "./file-tools";
+const DESTINATION_PATH = path.join(__dirname, "..", "output");
+const PATH = "/mnt/c/Users/Chad Lee/Documents/zettelkasten";
 
-const input = `
-There is a file folder full of markdown files. The frontmatter of the files have a
-plantedAt date field. For every file, I'd like you to create a new markdown file as
-the date of the plantedAt field, and copy the transformed contents of the file into
-the new file.
+const parser = StructuredOutputParser.fromZodSchema(
+	z.object({
+		filename: z
+			.string()
+			.describe("The new filename should be the date of the plantedAt field"),
+		contents: z.string().describe("The transformed contents of the file"),
+	})
+);
 
-To transform the contents, replace each paragraph with a indented bulleted list.
+const formatInstructions = parser.getFormatInstructions();
+
+const prompt = new PromptTemplate({
+	inputVariables: ["fileContents"],
+	partialVariables: { formatInstructions },
+	template: `
+I would like you to reformat a markdown file according to the following specifications:
+
+The frontmatter of the file should have a plantedAt date field. I'd like you to strip all
+frontmatter from the file, and reformat the contents by replacing each paragraph with
+an indented bulleted list.
 
 For example, if a file named "Hello World.md" looks like this:
 
 ---
 tags: [seedling]
 plantedAt: 2023-02-22
-lastTendedAt: 2023-02-22
+lastTendedAt: 2023-05-31
 ---
 
 There are three key concepts to master when creating an effective YouTube thumbnail.
@@ -36,7 +60,7 @@ The images should be *relevant* to your viewers' *interests* in relation to your
 Create curiosity using your image that makes a viewer want to click to satisfy that curiosity.
 
 
-You should create a new file named 2023-02-22.md and the contents should look like this:
+The new filename would be 2023-02-22.md with the following contents:
 
 - ## Hello World
 	- There are three key concepts to master when creating an effective YouTube thumbnail.
@@ -47,26 +71,66 @@ You should create a new file named 2023-02-22.md and the contents should look li
 	- ### Intrigue
 		- Create curiosity using your image that makes a viewer want to click to satisfy that curiosity.
 
-Notice the top level item is always an h2. Each subheading should be adjusted accordingly.
+Notice the top level item should always be an h2 with the filename. Each subheading should be
+adjusted to be hierarchal lower than h2 accordingly. Also notice how each subblock is indented
+to be a child of the parent block.
 
-How many files did you process in total?
-`;
+{formatInstructions}
+
+ONLY INCLUDE RAW, PARSABLE JSON IN YOUR RESPONSE. DO NOT INCLUDE ANYTHING ELSE.
+
+Here is the file I'd like you to transform:
+
+{fileContents}
+	`,
+});
+
+// return a generator that yields the next file to process
+// by looking in PATH for all files with a .md extension and
+// returning the filename and the contents of the file
+async function* readFiles() {
+	const files = await fs.promises.readdir(PATH);
+	for (const file of files) {
+		if (file.endsWith(".md")) {
+			const contents = await fs.promises.readFile(
+				path.join(PATH, file),
+				"utf8"
+			);
+			yield { file, contents };
+		}
+	}
+}
+
+const llm = new OpenAI({
+	modelName: "gpt-4",
+	temperature: 0,
+});
+
+const chain = new LLMChain({
+	llm,
+	prompt,
+	outputParser: OutputFixingParser.fromLLM(llm, parser),
+	verbose: true,
+});
 
 const run = async () => {
-	const model = new OpenAI({
-		modelName: "gpt-4",
-		temperature: 0,
-	});
+	// for each file, prompt the agent to transform the file
+	// and write the transformed file to DESTINATION_PATH
+	for await (const { file, contents } of readFiles()) {
+		try {
+			console.log(`Processing file ${file}`);
 
-	const executor = await initializeAgentExecutorWithOptions(tools, model, {
-		agentType: "structured-chat-zero-shot-react-description",
-		verbose: true,
-	});
+			const { text: result } = await chain.call({ fileContents: contents });
 
-	console.log("Loaded agent.");
+			console.log(`Saving to ${result.filename}`);
+			console.log();
 
-	const result = await executor.call({ input });
-	console.log(`Got output ${result.output}`);
+			const filename = path.join(DESTINATION_PATH, result.filename);
+			await fs.promises.writeFile(filename, result.contents, { flag: "a" });
+		} catch (e) {
+			console.error(`Error parsing file ${file}: ${e}`);
+		}
+	}
 };
 
 run();
