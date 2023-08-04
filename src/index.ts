@@ -110,7 +110,6 @@ const chain = new LLMChain({
 	llm,
 	prompt,
 	outputParser: OutputFixingParser.fromLLM(llm, parser),
-	verbose: true,
 });
 
 const run = async () => {
