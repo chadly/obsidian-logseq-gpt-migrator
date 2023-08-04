@@ -4,6 +4,12 @@ This uses GPT-4 to migrate my notes from [Obsidian](https://obsidian.md/) markdo
 
 ## Usage
 
+Create a .env file with the contents:
+
+```
+OPENAI_API_KEY=your secret API key from platform.openai.com
+```
+
 Update the path in `index.ts` to point to your Obsidian vault. Then run:
 
 ```
