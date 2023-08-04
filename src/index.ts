@@ -45,7 +45,7 @@ plantedAt: 2023-02-22
 lastTendedAt: 2023-05-31
 ---
 
-There are three things you should know about things.
+There are [[Other File Link|three things]] you should know about things.
 
 # Thing 1
 
@@ -72,7 +72,7 @@ Thing 3 is also here.
 The new filename would be 2023-02-22.md with the following contents:
 
 - ## 3 Things
-	- There are three things you should know about things.
+	- There are [[Other File Link|three things]] you should know about things.
 	- ### Thing 1
 		- This is a thing with other things that have things associated to those things.
 		- Sometimes, things are cool. Other times, things are not so cool. In fact, things can get hot.
@@ -89,7 +89,7 @@ The new filename would be 2023-02-22.md with the following contents:
 
 Notice the top level item should always be an h2 with the filename. Each subheading should be
 adjusted to be hierarchal lower than h2 accordingly. Also notice how each subblock is indented
-to be a child of the parent block.
+to be a child of the parent block. Make sure to keep all links intact [[link|link text]].
 
 {formatInstructions}
 
@@ -141,7 +141,9 @@ const run = async () => {
 			console.log();
 
 			const filename = path.join(DESTINATION_PATH, result.filename);
-			await fs.promises.writeFile(filename, result.contents, { flag: "a" });
+			await fs.promises.writeFile(filename, `${result.contents}\n\n`, {
+				flag: "a",
+			});
 		} catch (e) {
 			console.error(`Error parsing file ${file}: ${e}`);
 		}
